@@ -886,6 +886,12 @@ void _glfwPlatformDestroyWindow(_GLFWwindow* window)
     }
 
     destroyWindow(window);
+
+    if (window->win32.icon)
+    {
+        DestroyIcon(window->win32.icon);
+        window->win32.icon = NULL;
+    }
 }
 
 void _glfwPlatformSetWindowTitle(_GLFWwindow* window, const char* title)
@@ -900,6 +906,98 @@ void _glfwPlatformSetWindowTitle(_GLFWwindow* window, const char* title)
 
     SetWindowTextW(window->win32.handle, wideTitle);
     free(wideTitle);
+}
+
+void _glfwPlatformSetWindowIcon(_GLFWwindow* window, GLFWimage* image)
+{
+    if (image)
+    {
+        HDC dc;
+        HICON icon;
+        ICONINFO ii;
+        BITMAPV5HEADER bi;
+        HBITMAP mask, color;
+        UINT32* bits;
+
+        ZeroMemory(&bi, sizeof(bi));
+        bi.bV5Size = sizeof(bi);
+        bi.bV5Width = image->width;
+        bi.bV5Height = image->height;
+        bi.bV5Planes = 1;
+        bi.bV5BitCount = 32;
+        bi.bV5Compression = BI_BITFIELDS;
+        bi.bV5RedMask = 0x000000ff;
+        bi.bV5GreenMask = 0x0000ff00;
+        bi.bV5BlueMask = 0x00ff0000;
+        bi.bV5AlphaMask = 0xff000000;
+
+        dc = GetDC(NULL);
+        color = CreateDIBSection(dc,
+                                 (BITMAPINFO*) &bi,
+                                 DIB_RGB_COLORS,
+                                 (void**) &bits,
+                                 NULL,
+                                 0);
+        ReleaseDC(NULL, dc);
+
+        if (!color)
+        {
+            _glfwInputError(GLFW_PLATFORM_ERROR,
+                            "Win32: Failed to create color bitmap");
+            return;
+        }
+
+        memcpy(bits, image->pixels, image->width * image->height * 4);
+
+        mask = CreateBitmap(image->width, image->height, 1, 1, NULL);
+        if (!mask)
+        {
+            _glfwInputError(GLFW_PLATFORM_ERROR,
+                            "Win32: Failed to create mask bitmap");
+
+            DeleteObject(color);
+            free(bits);
+            return;
+        }
+
+        ZeroMemory(&ii, sizeof(ii));
+        ii.fIcon = TRUE;
+        ii.hbmMask = mask;
+        ii.hbmColor = color;
+
+        icon = CreateIconIndirect(&ii);
+        if (!icon)
+        {
+            _glfwInputError(GLFW_PLATFORM_ERROR, "Win32: Failed to create icon");
+
+            DeleteObject(color);
+            DeleteObject(mask);
+            return;
+        }
+
+        SendMessage(window->win32.handle, WM_SETICON, ICON_BIG, (LPARAM) icon);
+        SendMessage(window->win32.handle, WM_SETICON, ICON_SMALL, (LPARAM) icon);
+
+        DeleteObject(color);
+        DeleteObject(mask);
+
+        if (window->win32.icon)
+        {
+            DestroyIcon(window->win32.icon);
+            window->win32.icon = icon;
+        }
+    }
+    else
+    {
+        SendMessage(window->win32.handle, WM_SETICON, ICON_BIG, (LPARAM) NULL);
+        SendMessage(window->win32.handle, WM_SETICON, ICON_SMALL, (LPARAM) NULL);
+
+        if (window->win32.icon)
+        {
+            DestroyIcon(window->win32.icon);
+            window->win32.icon = NULL;
+        }
+    }
 }
 
 void _glfwPlatformGetWindowPos(_GLFWwindow* window, int* xpos, int* ypos)

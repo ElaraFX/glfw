@@ -617,6 +617,11 @@ void _glfwPlatformDestroyWindow(_GLFWwindow* window);
  */
 void _glfwPlatformSetWindowTitle(_GLFWwindow* window, const char* title);
 
+/*! @copydoc glfwSetWindowIcon
+ *  @ingroup platform
+ */
+void _glfwPlatformSetWindowIcon(_GLFWwindow* window, GLFWimage* image);
+
 /*! @copydoc glfwGetWindowPos
  *  @ingroup platform
  */

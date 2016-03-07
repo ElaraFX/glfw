@@ -191,6 +191,7 @@ typedef VkBool32 (APIENTRY *PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR)(
 typedef struct _GLFWwindowWin32
 {
     HWND                handle;
+    HICON               icon;
 
     GLFWbool            cursorTracked;
     GLFWbool            iconified;

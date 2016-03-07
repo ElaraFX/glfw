@@ -1913,6 +1913,25 @@ GLFWAPI void glfwSetWindowShouldClose(GLFWwindow* window, int value);
  */
 GLFWAPI void glfwSetWindowTitle(GLFWwindow* window, const char* title);
 
+/*! @brief Sets the icon for the specified window.
+ *
+ *  This function sets the icon of the specified window.
+ *
+ *  @param[in] window The window whose icon to set.
+ *  @param[in] image The image to create the icon from, or `NULL` to use the
+ *  default icon.
+ *
+ *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
+ *  GLFW_PLATFORM_ERROR.
+ *
+ *  @thread_safety This function must only be called from the main thread.
+ *
+ *  @since Added in version 3.2.
+ *
+ *  @ingroup window
+ */
+GLFWAPI void glfwSetWindowIcon(GLFWwindow* window, GLFWimage* image);
+
 /*! @brief Retrieves the position of the client area of the specified window.
  *
  *  This function retrieves the position, in screen coordinates, of the

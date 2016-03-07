@@ -1536,6 +1536,41 @@ void _glfwPlatformSetWindowTitle(_GLFWwindow* window, const char* title)
     XFlush(_glfw.x11.display);
 }
 
+void _glfwPlatformSetWindowIcon(_GLFWwindow* window, GLFWimage* image)
+{
+    if (image)
+    {
+        int i;
+        long* icon = calloc(image->width * image->height + 2, sizeof(long));
+
+        icon[0] = image->width;
+        icon[1] = image->height;
+
+        for (i = 0;  i < image->width * image->height;  i++)
+        {
+            // Convert RGBA to BGRA
+            icon[i + 2] = (image->pixels[i * 4 + 0] << 16) |
+                          (image->pixels[i * 4 + 1] <<  8) |
+                          (image->pixels[i * 4 + 2] <<  0) |
+                          (image->pixels[i * 4 + 3] << 24);
+        }
+
+        XChangeProperty(_glfw.x11.display, window->x11.handle,
+                        _glfw.x11.NET_WM_ICON,
+                        XA_CARDINAL, 32,
+                        PropModeReplace,
+                        (unsigned char*) icon,
+                        image->width * image->height + 2);
+
+        free(icon);
+    }
+    else
+    {
+        XDeleteProperty(_glfw.x11.display, window->x11.handle,
+                        _glfw.x11.NET_WM_ICON);
+    }
+}
+
 void _glfwPlatformGetWindowPos(_GLFWwindow* window, int* xpos, int* ypos)
 {
     Window child;

@@ -447,6 +447,15 @@ GLFWAPI void glfwSetWindowTitle(GLFWwindow* handle, const char* title)
     _glfwPlatformSetWindowTitle(window, title);
 }
 
+GLFWAPI void glfwSetWindowIcon(GLFWwindow* handle, GLFWimage* image)
+{
+    _GLFWwindow* window = (_GLFWwindow*) handle;
+    assert(window != NULL);
+
+    _GLFW_REQUIRE_INIT();
+    _glfwPlatformSetWindowIcon(window, image);
+}
+
 GLFWAPI void glfwGetWindowPos(GLFWwindow* handle, int* xpos, int* ypos)
 {
     _GLFWwindow* window = (_GLFWwindow*) handle;
